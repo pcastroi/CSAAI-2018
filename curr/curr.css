@@ -1,0 +1,42 @@
+.titulo{
+  font-size: 500;
+  clear: left;
+  text-align: center;
+}
+.sidebar{
+  float: left;
+  width: 16.33%;
+  padding: 1em;
+}
+.webdata{
+  float:right;
+  width: 80%;
+  border-left: 1px solid black;
+  padding: 1em;
+  overflow: hidden;
+}
+table.tabla, .tabla th, .tabla td {
+  border: 3px solid #460023;
+  border-radius: 1px;
+  width: 30%;
+  padding: 1px;
+  text-align: left;
+}
+.webdata p span {
+  font-weight: bold;
+}
+.webdata a:link, .webdata a:visited {
+   text-decoration: none;
+   font-weight: bold;
+   color: #cc0000;
+}
+.webdata a:hover {
+  color: #ff471a;
+  text-decoration: none;
+}
+.webdata a:active {
+  color: #0066cc;
+}
+h1.titulo {
+  text-shadow: 0 0 4px #0000b3;
+}

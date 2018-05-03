@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body onload="startpacman()">
+  <canvas id="mycanvas" width="513px" height="594px" style="border:1px solid #d3d3d3;"></canvas>
+<body onkeydown="presskey(event)">
+  <script>
+    //Deberia dividir el canvas en 17x20
+    var canvas_g;
+    var ctx_g;
+    var blockWidth_g;
+    var blockHeight_g;
+    var blocks_g;
+    var pacman = new Object();
+    var ghost = new Object();
+    var pill = new Object();
+    var wall = new Object();
+
+    function startpacman(){
+      blocks_g = [];
+      setupcanvas();
+      setupboard();
+      imgstart();
+    }
+
+    function setupcanvas(){
+      canvas_g = document.getElementById("mycanvas");
+      ctx_g = canvas_g.getContext("2d");
+    }
+
+    function setupboard(){
+      var xPos = 0;
+      var yPos = 0;
+      var blockWidth_g = (canvas_g.width)/19;
+      var blockHeight_g = (canvas_g.height)/22;
+      var position = 0;
+      var block = {};
+      var i;
+      var u;
+      var board = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                  [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+                  [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                  [1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                  [2, 0, 0, 0, 0, 0, 0, 1, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 2],
+                  [1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                  [1, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                  [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1],
+                  [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                  [1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+                  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]];
+
+      ctx_g.clearRect(0, 0, canvas_g.width, canvas_g.height);
+      for(i = 0; i < 22; i++){
+        row = board[i];
+        for (u = 0; u < 19; u++){
+          block = {};
+          block.px = xPos;
+          block.py = yPos;
+          block.pos = position;
+          if (row[u] == 1){   //Definimos las paredes del mapa
+            block.wall = true;
+            wall.pos = position; //Arreglar
+            ctx_g.fillStyle = "black";
+            ctx_g.fillRect(xPos, yPos, blockWidth_g, blockHeight_g);
+          }else if (row[u] == 2){   //Definimos las plataformas de teleportación
+            block.road = true;
+            block.teleport = true;
+            ctx_g.fillStyle = "orange";
+            ctx_g.fillRect(xPos, yPos, blockWidth_g, blockHeight_g);
+          }else if (row[u] == 3){   //Bloque de comienzo de pacman
+            block.road = true;
+            block.pacstart = true;
+          }else if (row[u] == 4){   //Bloque de comienzo de los fantasmas
+            block.road = true;
+            block.ghstart = true;
+          }else if (row[u]== 0){
+            block.road = true;
+            block.pills = true;
+            pill.pos = position;  //Arreglar
+          }
+          blocks_g.push(block);   //Guardamos los bloques en una variable global
+          xPos += blockWidth_g;
+          position += 1;
+        }
+        xPos = 0;
+        yPos += blockHeight_g;
+      }
+    }
+
+    function imgstart(){
+      var block = blocks_g;
+      for (i = 0; i < 418; i++){
+        if (block[i].pacstart == true){   //Dibujar a Pacman en la casilla de salida
+          pacman.xpos = block[i].px;
+          pacman.ypos = block[i].py;
+          pacman.pos = block[i].pos;
+          pacman.img = new Image();
+          pacman.img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/542px-Pacman.svg.png";
+          ctx_g.drawImage(pacman.img, block[i].px, block[i].py, blockWidth_g, blockHeight_g);
+        }else if(block[i].ghstart == true){   //Dibujar los fantasmas en la casilla de salida
+          ghost.img = new Image();
+          ghost.img.src = "http://cdn.playbuzz.com/cdn/da45c6bf-1686-4132-b3fd-2043b7d30ff3/8a62379b-eed9-49f2-8c73-6138c250cd60.png";
+          ctx_g.drawImage(ghost.img, block[i].px, block[i].py, blockWidth_g, blockHeight_g);
+        }else if(block[i].pills == true){
+          pill.img = new Image();
+          pill.img.src = "http://www.clker.com/cliparts/v/W/8/R/B/w/blue-circle-hi.png";
+          ctx_g.drawImage(pill.img, block[i].px + 11, block[i].py + 11, 4, 4);
+        }
+      }
+      console.log(blocks_g);
+      console.log(pacman);
+      console.log(wall);
+      console.log(ghost);
+      console.log(pill);
+    }
+
+    function presskey(event, pacman, ghost, pill){
+      switch(event.key){
+        case "ArrowUp":   //Arreglar
+          if(pacman.pos - 19 == wall.pos){
+            ctx_g.rotate(PI/2);
+            ctx_g.drawImage(pacman.img, pacman.xpos, pacman.ypos, blockWidth_g, blockHeight_g);
+          }else{
+            pacman.pos -= 19;
+            ctx_g.rotate(PI/2);
+            ctx_g.drawImage(pacman.img, pacman.xpos, pacman.ypos, blockWidth_g, blockHeight_g);
+          }
+          console.log("↑");
+          break;
+        case "ArrowDown":
+          console.log("↓");
+          break;
+        case "ArrowRight":
+          console.log("→");
+          break;
+        case "ArrowLeft":
+          console.log("←");
+          break;
+      }
+    }
+
+
+  </script>
+</body>
+</html>

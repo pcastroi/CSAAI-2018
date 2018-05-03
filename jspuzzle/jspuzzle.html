@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="jspuzzle.css">
+</head>
+<body>
+
+  <button onclick="main(document.getElementById('mario'))"><img id="mario" src="https://is1-ssl.mzstatic.com/image/thumb/Purple128/v4/18/a7/98/18a7987c-5c6b-84a9-b06a-e1d8dbd893b5/AppIcon-1x_U007emarketing-85-220-5.png/600x600bf.jpg"></button>
+  <button onclick="main(document.getElementById('luigi'))"><img id="luigi" src="https://i.redditmedia.com/_NOncB1rN2a69bQG3MUEnYGwVkOrrOndIfgZfUgg67Y.png?w=512&s=02564289e48e3fb4a9d793cc0177c206"></button>
+  <button onclick="main(document.getElementById('wario'))"><img id="wario" src="https://vignette.wikia.nocookie.net/bomberman/images/a/ac/Wario.jpg/revision/latest?cb=20100130084727"></button>
+
+<br>
+  <canvas id="mycanvas" width="600px" height="600px" style="border:1px solid #d3d3d3;"></canvas>
+  <input type="text" id="times">
+
+  <script>
+
+  var _pieces;
+  var _pieceWidth;
+  var _pieceHeight;
+  var canvas;
+  var _ctx;
+  var _img;
+  var _gamewon=false;
+  var count=0;
+  var time=0;
+
+  function main(img){
+    count=0;
+    time=0;
+
+    _pieces = [];
+    _img = img;
+    fillcanvas(img);
+    startcounting();
+    buildpieces();
+    reorder(img);
+    canvas.onmousedown = function(ev){mouseclick();};
+  }
+
+  function fillcanvas(img){
+    canvas = document.getElementById("mycanvas");
+    _ctx = canvas.getContext("2d");
+    _ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    _pieceWidth = (canvas.width)/3;
+    _pieceHeight = (canvas.height)/3;
+  }
+
+  function buildpieces(){
+    var i;
+    var piece;
+    var xPos = 0;
+    var yPos = 0;
+    for(i = 0;i < 9;i++){
+        piece = {};
+        piece.sx = xPos;
+        piece.sy = yPos;
+        piece.hollow = false;
+        _pieces.push(piece);
+        xPos += _pieceWidth;
+        if(xPos >= canvas.width){
+            xPos = 0;
+            yPos += _pieceHeight;
+        }
+    }
+  }
+
+  function reorder(img){
+    _pieces = randomizearray(_pieces);
+    _pieces[3].hollow = true;
+    drawpuzzle(img);
+  }
+
+  function drawpuzzle(img){
+    _ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var i;
+    var piece;
+    var xPos = 0;
+    var yPos = 0;
+    for(i = 0;i < _pieces.length;i++){
+        piece = _pieces[i];
+        piece.xPos = xPos;
+        piece.yPos = yPos;
+        if(piece.hollow == false){
+          _ctx.drawImage(img, piece.sx, piece.sy, _pieceWidth, _pieceHeight, xPos, yPos, _pieceWidth, _pieceHeight);
+          _ctx.strokeRect(xPos, yPos, _pieceWidth,_pieceHeight);
+        }else{
+          _ctx.fillStyle = "#934b10";
+          _ctx.fillRect(xPos, yPos, _pieceWidth, _pieceHeight);
+        }
+
+        xPos += _pieceWidth;
+        if(xPos >= canvas.width){
+            xPos = 0;
+            yPos += _pieceHeight;
+        }
+    }
+  }
+
+  function randomizearray(o){
+    for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+  }
+
+  function mousepos(){
+    var x = event.clientX;
+    var y = event.clientY;
+    return [x, y];
+  }
+
+  function movepieces(a, b){
+    var origin = _pieces[a];
+    var destination = _pieces[b];
+    _pieces[a] = destination;
+    _pieces[b] = origin;
+    return _pieces;
+  }
+
+  function hollowcheck(piecenum){
+    var hollow = false;
+    var newpos;
+    if(piecenum!=3 && piecenum!=6){
+      if(piecenum-1>=0){
+        if(_pieces[piecenum-1].hollow==true){
+            hollow = true;
+            newpos = piecenum - 1;
+        }
+      }
+    }
+    if(piecenum!=2 && piecenum!=5){
+      if(piecenum+1<9){
+        if(_pieces[piecenum+1].hollow==true){
+          hollow = true;
+          newpos = piecenum + 1;
+        }
+      }
+    }
+    if(piecenum-3>=0){
+      if(_pieces[piecenum-3].hollow==true){
+        hollow = true;
+        newpos = piecenum - 3;
+      }
+    }
+    if (piecenum+3<9){
+      if(_pieces[piecenum+3].hollow==true){
+        hollow = true;
+        newpos = piecenum + 3;
+      }
+    }
+    //En diagonal por que soy un noob
+    if(piecenum-4>=0){
+      if(_pieces[piecenum-4].hollow==true){
+        hollow=true;
+        newpos=piecenum-4;
+      }
+    }
+    if(piecenum+4<9){
+      if(_pieces[piecenum+4].hollow==true){
+        hollow=true;
+        newpos=piecenum+4;
+      }
+    }
+    if(piecenum-2>=0){
+      if(_pieces[piecenum-2].hollow==true){
+        hollow=true;
+        newpos=piecenum-2;
+      }
+    }
+    if(piecenum+2<9){
+      if(_pieces[piecenum+2].hollow==true){
+        hollow=true;
+        newpos=piecenum+2;
+      }
+    }
+    //Deberia borrar lo de arriba ya que no cumple las reglas estrictamente
+    return [hollow, newpos];
+  }
+
+  function mouseclick(){
+    var mouse = mousepos();
+    var piecenum;
+    var canvaspos = [canvas.offsetTop, canvas.offsetLeft];
+    var hdiv1 = canvaspos[0] + _pieceWidth;
+    var hdiv2 = canvaspos[0] + 2*_pieceWidth;
+    var vdiv1 = canvaspos[1] + _pieceHeight;
+    var vdiv2 = canvaspos[1] + 2*_pieceHeight;
+
+    if(mouse[0]<vdiv1 && mouse[1]<hdiv1){
+      piecenum = 0;
+    }else if(mouse[0]>vdiv1 && mouse[0]<vdiv2 && mouse[1]<hdiv1){
+      piecenum = 1;
+    }else if(mouse[0]>vdiv2 && mouse[1]<hdiv1){
+      piecenum = 2;
+    }else if(mouse[0]<vdiv1 && mouse[1]>hdiv1 && mouse[1]<hdiv2){
+      piecenum = 3;
+    }else if(mouse[0]>vdiv1 && mouse[0]<vdiv2 && mouse[1]>hdiv1 && mouse[1]<hdiv2){
+      piecenum = 4;
+    }else if(mouse[0]>vdiv2 && mouse[1]>hdiv1 && mouse[1]<hdiv2){
+      piecenum = 5;
+    }else if(mouse[0]<vdiv1 && mouse[1]>hdiv2){
+      piecenum = 6;
+    }else if(mouse[0]>vdiv1 && mouse[0]<vdiv2 && mouse[1]>hdiv2){
+      piecenum = 7;
+    }else if(mouse[0]>vdiv2 && mouse[1]>hdiv2){
+      piecenum = 8;
+    }
+    check = hollowcheck(piecenum);
+    if (check[0]==true){
+      _pieces = movepieces(piecenum, check[1]);
+      drawpuzzle(_img);
+      wingame();
+    }
+  }
+
+  function wingame(){ //Si ganas la partida, hasta que no superes el record que hayas hecho, no va a aparecer que has ganado.
+    var i;
+    var sum=0;
+    var piece;
+    var record = localStorage.record;
+
+    console.log('record='+record);
+
+    for(i = 0; i<9; i++){
+      piece = _pieces[i];
+      if (piece.sx == piece.xPos && piece.sy == piece.yPos){
+        sum += 1;
+      }
+    }
+    if(sum==9){
+      _gamewon = true;
+      canvas.onmousedown=function(ev){nullfunction();};
+      _ctx.clearRect(0, 0, canvas.width, canvas.height);
+      _ctx.drawImage(_img, 0, 0, canvas.width, canvas.height);
+      if(record == undefined){
+        record = 100000;
+      }
+      if(record>count){
+        localStorage['record'] = count;
+        setTimeout("alert('You are a winner!, record='+count);", 500);
+        clearInterval(time);
+      }
+      console.log('count='+count);
+      console.log('time='+time);
+      console.log('record='+record);
+    }
+  }
+
+  function startcounting(){
+        count=0;
+        time=0;
+        clearTimeout(time);
+        counter();
+      }
+
+  function counter(){
+        clearTimeout(time);
+        document.getElementById("times").value = count;
+        count=count+1;
+        time=setTimeout(function(){counter()}, 1000);
+  }
+
+
+  function nullfunction(){}
+
+
+  </script>
+
+</body>
+</html>
