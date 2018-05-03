@@ -33,8 +33,6 @@
     function setupboard(){
       var xPos = 0;
       var yPos = 0;
-      var blockWidth_g = (canvas_g.width)/19;
-      var blockHeight_g = (canvas_g.height)/22;
       var position = 0;
       var block = {};
       var i;
@@ -61,7 +59,8 @@
                   [1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]];
-
+      blockWidth_g = (canvas_g.width)/19; //Variable global
+      blockHeight_g = (canvas_g.height)/22; //Variable global
       ctx_g.clearRect(0, 0, canvas_g.width, canvas_g.height);
       for(i = 0; i < 22; i++){
         row = board[i];
