@@ -1,2 +1,2 @@
 # CSAAI-2018
-Prácticas de la asignatura CSAAI - URJC
+Prácticas CSAAI (2018 - URJC)
